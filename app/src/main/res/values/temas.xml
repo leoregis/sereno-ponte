@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="violeta">#6B4FA0</color>
+    <color name="fundo_icone">#6B4FA0</color>
+    <style name="Tema" parent="android:Theme.DeviceDefault.Light.DarkActionBar">
+        <item name="android:colorPrimary">@color/violeta</item>
+        <item name="android:colorAccent">@color/violeta</item>
+    </style>
+</resources>
