@@ -64,9 +64,19 @@ jobs:
 
       - name: Conferir a assinatura
         run: |
-          apksigner=$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)
+          # Uma versão estável das build-tools (a mais nova pode pedir outro Java).
+          apksigner=""
+          for v in 36.0.0 35.0.0 34.0.0; do
+            if [ -x "$ANDROID_HOME/build-tools/$v/apksigner" ]; then apksigner="$ANDROID_HOME/build-tools/$v/apksigner"; break; fi
+          done
+          [ -n "$apksigner" ] || apksigner=$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)
           for f in app/build/outputs/apk/*/release/*.apk; do
-            "$apksigner" verify --print-certs "$f" | grep -E "Signer #1 certificate (DN|SHA-256)"
+            saida=$("$apksigner" verify --print-certs "$f" 2>&1) || { echo "$saida"; exit 1; }
+            echo "$f"; echo "$saida" | grep -E "certificate (DN|SHA-256)"
+            # Com a chave da ponte nos segredos, o APK tem de sair com ela.
+            if [ -n "$PONTE_KEYSTORE_ARQUIVO" ]; then
+              echo "$saida" | grep -q "CN=Sereno ponte" || { echo "assinado com outra chave"; exit 1; }
+            fi
           done
 
       - name: Juntar os arquivos
